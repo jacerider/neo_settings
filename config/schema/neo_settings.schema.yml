@@ -1,0 +1,30 @@
+neo_settings.variation.*:
+  type: config_entity
+  label: 'Settings'
+  mapping:
+    id:
+      type: string
+      label: 'ID'
+    uuid:
+      type: string
+    label:
+      type: label
+      label: 'Label'
+    parent:
+      type: string
+      label: 'Parent'
+    plugin:
+      type: string
+      label: 'Plugin'
+    settings:
+      type: neo_settings.settings.[%parent.plugin]
+      label: 'Settings'
+    weight:
+      type: integer
+      label: 'Weight'
+    visibility:
+      type: sequence
+      label: 'Visibility Conditions'
+      sequence:
+        type: condition.plugin.[id]
+        label: 'Visibility Condition'

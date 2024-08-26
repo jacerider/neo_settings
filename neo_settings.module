@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * @file
+ * Contains neo_settings.module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Url;
+use Drupal\neo_settings\SettingsInterface;
+
+/**
+ * Implements hook_entity_operation().
+ */
+function neo_settings_entity_operation(EntityInterface $entity) {
+  $operations = [];
+  if ($entity instanceof SettingsInterface) {
+    $plugin_id = $entity->getPluginId();
+    if ($entity->access('update')) {
+      $operations['edit'] = [
+        'title' => t('Edit'),
+        'url' => Url::fromRoute("neo.settings.plugin.{$plugin_id}.variations.edit", [
+          'neo_settings' => $entity->id(),
+        ]),
+      ];
+    }
+    if ($entity->access('delete')) {
+      $operations['delete'] = [
+        'title' => t('Delete'),
+        'url' => Url::fromRoute("neo.settings.plugin.{$plugin_id}.variations.delete", [
+          'neo_settings' => $entity->id(),
+        ]),
+      ];
+    }
+  }
+  return $operations;
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function neo_settings_preprocess_fieldset(&$variables) {
+  $static = &drupal_static(__FUNCTION__, []);
+  if (!empty($variables['element']['#neo_settings_override'])) {
+    $count = $static[$variables['element']['#neo_settings_override']['#id']] ?? 0;
+    $count++;
+    $static[$variables['element']['#neo_settings_override']['#id']] = $count;
+    if ($count !== count(array_filter($variables['element']['#theme_wrappers'], function ($value) {
+      return is_string($value) && $value === 'fieldset';
+    }))) {
+      return;
+    }
+    // $variables['fieldset_wrapper_attributes']['class'][] = 'js-form-wrapper';
+    // $variables['fieldset_wrapper_attributes']['data-drupal-states'] = $variables['attributes']['data-drupal-states'];
+    $variables['attributes'] = [];
+    $variables['attributes']['class'][] = 'neo-settings-override';
+    $variables['legend']['title'] = $variables['element']['#neo_settings_override'];
+    $variables['description']['content'] = NULL;
+  }
+}

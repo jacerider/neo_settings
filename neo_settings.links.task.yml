@@ -1,0 +1,3 @@
+neo_settings.local_tasks:
+  deriver: 'Drupal\neo_settings\Plugin\Derivative\DynamicLocalTasks'
+  weight: 100

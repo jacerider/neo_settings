@@ -1,0 +1,4 @@
+neo_settings.menu_link:
+  class: Drupal\neo_settings\Plugin\Menu\SettingsMenuLink
+  deriver: Drupal\neo_settings\Plugin\Derivative\DynamicMenuLinks
+  menu_name: admin

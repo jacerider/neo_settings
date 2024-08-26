@@ -1,0 +1,5 @@
+services:
+  neo_settings_test.repository:
+    class: Drupal\neo_settings\SettingsRepository
+    parent: neo_settings.repository
+    arguments: ['neo_settings_test']

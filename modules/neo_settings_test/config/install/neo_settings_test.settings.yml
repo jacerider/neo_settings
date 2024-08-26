@@ -1,0 +1,12 @@
+global: 'three'
+input: 'Hello'
+value_single: 'two'
+value_multiple:
+  - two
+  - three
+# Use '1' as the default value for boolean fields.
+value_boolean: 1
+nested:
+  input: 'Hello Nested'
+  deep:
+    input: 'Hello Deep Nested'

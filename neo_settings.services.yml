@@ -1,0 +1,16 @@
+services:
+  neo_settings.repository:
+    abstract: true
+    class: Drupal\neo_settings\SettingsRepository
+    arguments: ['@entity_type.manager', '@plugin.manager.neo_settings', '@current_route_match']
+  plugin.manager.neo_settings:
+    class: Drupal\neo_settings\SettingsManager
+    parent: neo_settings_plugin_manager
+  neo_settings_plugin_manager:
+    abstract: true
+    arguments: ['@container.namespaces', '@cache.discovery', '@module_handler', '@config.factory']
+  neo_settings.config_subscriber:
+    class: '\Drupal\neo_settings\EventSubscriber\ConfigSubscriber'
+    arguments: ['@entity_type.manager', '@plugin.manager.neo_settings']
+    tags:
+      - { name: 'event_subscriber' }

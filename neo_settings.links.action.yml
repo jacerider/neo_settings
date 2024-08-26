@@ -1,0 +1,4 @@
+neo_settings.local_tasks:
+  class: \Drupal\Core\Menu\LocalActionDefault
+  deriver: 'Drupal\neo_settings\Plugin\Derivative\DynamicLocalActions'
+  weight: 100
