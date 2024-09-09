@@ -690,7 +690,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
   /**
    * {@inheritdoc}
    */
-  public function getDiffConfig() {
+  public function getDiffConfigValues() {
     // We use original config as we do not want extended config to be factored
     // in the results.
     return NestedArray::diffDeep($this->configConfigurationOriginal, $this->getDefaultValues());
@@ -701,7 +701,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
    */
   public function getDiffConfigValue($key, $default = NULL) {
     $exists = NULL;
-    $values = $this->getDiffConfig();
+    $values = $this->getDiffConfigValues();
     $value = NestedArray::getValue($values, (array) $key, $exists);
     if (!$exists) {
       $value = $default;

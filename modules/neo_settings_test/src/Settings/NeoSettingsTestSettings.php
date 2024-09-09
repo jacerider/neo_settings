@@ -136,7 +136,7 @@ class NeoSettingsTestSettings extends SettingsBase {
         'diff' => [
           '#type' => 'html_tag',
           '#tag' => 'pre',
-          '#value' => print_r($this->getDiffConfig(), TRUE),
+          '#value' => print_r($this->getDiffConfigValues(), TRUE),
         ],
       ];
     }

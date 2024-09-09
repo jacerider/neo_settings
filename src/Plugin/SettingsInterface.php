@@ -202,7 +202,7 @@ interface SettingsInterface extends ValuesInterface, PluginInspectionInterface, 
    * @return array
    *   The different configuration.
    */
-  public function getDiffConfig();
+  public function getDiffConfigValues();
 
   /**
    * Returns the value for a specific diff key between the default and core.

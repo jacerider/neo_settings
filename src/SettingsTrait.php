@@ -28,8 +28,8 @@ trait SettingsTrait {
   /**
    * Gets the settings.
    *
-   * @return \Drupal\neosettings\SettingsRepositoryInterface
-   *   The settings repository.
+   * @return \Drupal\neo_settings\Plugin\SettingsInterface
+   *   The settings.
    */
   protected function getSettings() {
     if (!isset($this->settings)) {
