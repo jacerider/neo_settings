@@ -28,3 +28,6 @@ neo_settings.variation.*:
       sequence:
         type: condition.plugin.[id]
         label: 'Visibility Condition'
+    lock:
+      type: boolean
+      label: 'Lock'
