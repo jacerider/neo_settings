@@ -173,6 +173,10 @@ class SettingsForm extends EntityForm implements SettingsFormInterface {
    *
    * @param array $values
    *   The values.
+   * @param array $overrides
+   *   The overrides.
+   * @param array $path
+   *   The path.
    *
    * @return array
    *   The remaining values.

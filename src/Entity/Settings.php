@@ -105,7 +105,7 @@ class Settings extends ConfigEntityBase implements SettingsInterface, EntityWith
   protected $lock = FALSE;
 
   /**
-   * The plugin collection that holds the block plugin for this entity.
+   * The plugin collection that holds the setting plugin for this entity.
    *
    * @var \Drupal\neo_settings\SettingsPluginCollection
    */
