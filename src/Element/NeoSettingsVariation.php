@@ -42,6 +42,16 @@ class NeoSettingsVariation extends Select {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  public static function preRenderAjaxForm($element) {
+    if (isset($element['#ajax']) && !isset($element['#ajax']['event'])) {
+      $element['#ajax']['event'] = 'change';
+    }
+    return parent::preRenderAjaxForm($element);
+  }
+
+  /**
    * Get options.
    *
    * @param string $settings_repository_id

@@ -14,16 +14,9 @@ trait SettingsTrait {
   /**
    * The settings.
    *
-   * @var \Drupal\neosettings\Plugin\SettingsInterface
+   * @var \Drupal\neo_settings\Plugin\SettingsInterface
    */
   protected SettingsInterface $settings;
-
-  /**
-   * The settings variation ID.
-   *
-   * @var string
-   */
-  protected string $settingsVariationId;
 
   /**
    * Gets the settings.
@@ -31,30 +24,20 @@ trait SettingsTrait {
    * @return \Drupal\neo_settings\Plugin\SettingsInterface
    *   The settings.
    */
-  protected function getSettings() {
+  protected function getSettings(array $settings = [], string $variationId = NULL): SettingsInterface {
     if (!isset($this->settings)) {
-      if (!isset($this->settingsId)) {
-        throw new \Exception('Settings ID is not set.');
-      }
+      assert(isset($this->settingsId), 'Settings ID is not set.');
       /** @var \Drupal\neo_settings\SettingsRepositoryInterface $repository */
       $repository = \Drupal::service($this->settingsId);
-      $this->settings = isset($this->settingsVariationId) ? $repository->get($this->settingsVariationId) : $repository->getActive();
+      $this->settings = isset($variationId) ? $repository->get($variationId) : $repository->getActive();
+      if ($settings) {
+        // If settings are supplied, we overlay them on top of all other
+        // settings.
+        $this->settings = clone $this->settings;
+        $this->settings->extendInstanceValues($settings);
+      }
     }
-
     return $this->settings;
-  }
-
-  /**
-   * Sets the setting variation id.
-   *
-   * @param string $variationId
-   *   The settings.
-   *
-   * @return $this
-   */
-  protected function setSettingsVariationId($variationId):self {
-    $this->settingsVariationId = $variationId;
-    return $this;
   }
 
 }

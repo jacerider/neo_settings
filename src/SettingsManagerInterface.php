@@ -29,13 +29,13 @@ interface SettingsManagerInterface extends PluginManagerInterface, CachedDiscove
    *   The ID of the plugin being instantiated.
    * @param array $configuration
    *   An array of configuration relevant to the plugin instance.
-   * @param bool $variation_id
+   * @param string $variation_id
    *   Will flag the plugin as a variation instance.
    *
    * @return \Drupal\neo_settings\Plugin\SettingsInterface
    *   The neo settings.
    */
-  public function createInstance($plugin_id, array $configuration = [], $variation_id = FALSE);
+  public function createInstance($plugin_id, array $configuration = [], string $variation_id = '');
 
   /**
    * Creates a pre-configured instance of a variation plugin.

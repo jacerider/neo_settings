@@ -90,6 +90,8 @@ class SettingsForm extends EntityForm implements SettingsFormInterface {
     $form = parent::form($form, $form_state);
     $neoSettings = $this->entity;
 
+    $form['preview'] = $neoSettings->getPlugin()->buildPreview();
+
     $form['messages'] = [
       '#markup' => '<div id="neo-settings-messages"></div>',
       '#weight' => -100,
@@ -130,21 +132,23 @@ class SettingsForm extends EntityForm implements SettingsFormInterface {
           'callback' => [get_class($this), 'ajaxExtend'],
         ],
       ];
-      if ($parent_id) {
-        $extendedNeoSettings = $this->getSettings($form_state->getValue('parent'));
-        if ($extendedNeoSettings) {
-          $user_input = $form_state->getUserInput();
-          $user_input['settings'] = $this->prepareDefaultUserInput($user_input['settings'], $user_input['_override']);
-          $form_state->setUserInput($user_input);
-          $neoSettings->getPlugin()->extendConfigValues($extendedNeoSettings->getPlugin()->getValues());
+
+      $user_input = $form_state->getUserInput();
+      if ($user_input) {
+        if ($parent_id) {
+          $extendedNeoSettings = $this->getSettings($form_state->getValue('parent'));
+          if ($extendedNeoSettings) {
+            $user_input['settings'] = $this->prepareDefaultUserInput($user_input['settings'], $user_input['_override']);
+            $form_state->setUserInput($user_input);
+            $neoSettings->getPlugin()->extendConfigValues($extendedNeoSettings->getPlugin()->getValues());
+          }
         }
-      }
-      else {
-        if ($neoSettings->getPlugin()->isExtended()) {
-          $user_input = $form_state->getUserInput();
-          $user_input['settings'] = $this->prepareDefaultUserInput($user_input['settings'], $user_input['_override']);
-          $form_state->setUserInput($user_input);
-          $neoSettings->getPlugin()->unextendConfigValues();
+        else {
+          if ($neoSettings->getPlugin()->isExtended()) {
+            $user_input['settings'] = $this->prepareDefaultUserInput($user_input['settings'], $user_input['_override']);
+            $form_state->setUserInput($user_input);
+            $neoSettings->getPlugin()->unextendConfigValues();
+          }
         }
       }
     }

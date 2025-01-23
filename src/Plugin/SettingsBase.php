@@ -75,6 +75,14 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
   protected $variationConfiguration;
 
   /**
+   * The instance configuration.
+   *
+   * @var array
+   *   The instance configuration.
+   */
+  protected $instanceConfiguration;
+
+  /**
    * The form configuration.
    *
    * @var array
@@ -246,6 +254,13 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
   /**
    * {@inheritdoc}
    */
+  public function buildPreview() {
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function buildSettingsForm(array $form, FormStateInterface $form_state) {
     if (!isset($form['#parents'])) {
       $this->messenger->addWarning($this->t('The form is not properly nested. It requires a #parent property.'));
@@ -260,6 +275,22 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
 
     // Set the form configuration values.
     $this->setFormConfigValues(isset($form['#settings_config']) ? ($form['#settings_config'] ?: []) : []);
+
+    $scopeKey = $this->getVariationScopeKey();
+    if ($scopeKey && $this->allowVariations() && $this->isVariation() && !in_array($this->id(), [
+      $this->getValue('neo_settings_scope_front'),
+      $this->getValue('neo_settings_scope_back'),
+    ])) {
+      $form[$scopeKey] = [
+        '#type' => 'checkbox',
+        '#title' => $this->t('Allow Scope'),
+        '#description' => $this->t('If checked, the fontend/backend scope will be applied. This means the @label configured for the scope will be merged with the settings.', [
+          '@label' => $this->getPluginDefinition()['variation_label'],
+        ]),
+        '#default_value' => $this->getValue($scopeKey, FALSE),
+        '#neo_settings_override' => FALSE,
+      ];
+    }
 
     $mode = $this->getFormConfigValue('mode');
     $method = 'build' . ucfirst($mode) . 'Form';
@@ -290,35 +321,38 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
    *   A nested array of form elements comprising the form.
    */
   public function attachSettingsFormToggles(array $form, FormStateInterface $form_state) {
+    $trigger = $form_state->getTriggeringElement();
+    if ($trigger && NestedArray::getValue($form, array_diff($form['#array_parents'], $trigger['#array_parents']))) {
+      // Do not process when ajax is triggered from setting elements.
+      return $form;
+    }
     $form['#element_validate'][] = [__CLASS__, 'removeDefaultValues'];
     $elements = $this->overrideParentsElements($form, $form_state);
     foreach ($elements as $element) {
-      $parents = $element['#parents'];
-      array_shift($parents);
-      $array_parents = $element['#array_parents'];
-      array_shift($array_parents);
+      $parents = [end($element['#parents'])];
+      $array_parents = array_slice($element['#array_parents'], count($form['#parents']));
       $setting_parents = $element['#setting_parents'] ?? $parents;
       $element = NestedArray::getValue($form, $array_parents);
       if ($element) {
         $id = Html::getId('neo-setting-override-' . implode('-', $element['#parents']));
         $element['#states']['visible']['#' . $id] = ['checked' => FALSE];
-        if (!$form_state->isRebuilding()) {
-          $element['#neo_settings_override'] = [
-            '#type' => 'checkbox',
-            '#title' => t('@label: Use Default', [
-              '@label' => $element['#title'],
-            ]),
-            '#parents' => array_merge(['_override'], [
-              implode('_', $parents),
-            ]),
-            '#return_value' => implode(':', $element['#parents']),
-            '#id' => $id,
-            '#default_value' => !$this->hasVariationValue($setting_parents),
-            '#margin' => 0,
-          ];
-          $element['#pre_render'][] = [$this, 'preRenderSettingsFormToggles'];
-          $this->formBuilder->doBuildForm('neo_settings_override', $element['#neo_settings_override'], $form_state);
-        }
+        $element['#neo_settings_override'] = [
+          '#type' => 'checkbox',
+          '#title' => t('@label: Use Default', [
+            '@label' => $element['#title'],
+          ]),
+          '#parents' => array_merge(['_override'], [
+            implode('_', $parents),
+          ]),
+          '#return_value' => implode(':', $element['#parents']),
+          '#id' => $id,
+          '#default_value' => !$this->hasVariationValue($setting_parents),
+          '#wrapper_attributes' => [
+            'class' => ['!m-0'],
+          ],
+        ];
+        $element['#pre_render'][] = [$this, 'preRenderSettingsFormToggles'];
+        $this->formBuilder->doBuildForm('neo_settings_override', $element['#neo_settings_override'], $form_state);
         NestedArray::setValue($form, $array_parents, $element);
       }
     }
@@ -345,6 +379,9 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
       $element = $form[$key];
       // Element is empty.
       if (empty($element)) {
+        continue;
+      }
+      if (isset($element['#neo_settings_override']) && empty($element['#neo_settings_override'])) {
         continue;
       }
       // Element is not a defined type.
@@ -444,6 +481,9 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
    * {@inheritdoc}
    */
   public function validateSettingsForm(array $form, FormStateInterface $form_state) {
+    if ($scopeKey = $this->getVariationScopeKey()) {
+      $form_state->setValue($scopeKey, $form_state->getValue($scopeKey) ? 1 : 0);
+    }
     $this->validateForm($form, $form_state);
   }
 
@@ -569,6 +609,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
       $this->getDefaultValues(),
       $existingValues,
     ], FALSE);
+
     // Merge in strict from config values.
     $this->mergeStrictParentValues($existingValues, $configValues);
     // Merge in strict from values.
@@ -587,7 +628,15 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
    * {@inheritdoc}
    */
   public function getDefaultValues() {
-    return $this->pluginDefinition['configuration'];
+    $defaults = $this->pluginDefinition['configuration'];
+    if ($scopeKey = $this->getVariationScopeKey()) {
+      $defaults = [
+        $scopeKey => FALSE,
+        'neo_settings_scope_front' => NULL,
+        'neo_settings_scope_back' => NULL,
+      ] + $defaults;
+    }
+    return $defaults;
   }
 
   /**
@@ -734,6 +783,35 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
   }
 
   /**
+   * Processes the scope for the current settings.
+   *
+   * This method dynamically applies scope-based extended values based on the
+   * current context (admin or front). It checks if the 'neo_settings_scope'
+   * value is set and determines the appropriate scope to use (admin or front).
+   * If a valid scope is found and it is different from the current scope, it
+   * loads the corresponding settings entity and extends the configuration
+   * values with the settings from the loaded scope.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\PluginException
+   *   Thrown if the entity type manager cannot load the 'neo_settings' storage.
+   */
+  protected function processScope() {
+    // Dynamically apply scope-based extended values.
+    $scopeKey = $this->getVariationScopeKey();
+    if ($scopeKey && $this->getValue($scopeKey)) {
+      $adminContext = \Drupal::service('router.admin_context');
+      $scope = $adminContext->isAdminRoute() ? $this->getValue('neo_settings_scope_back') : $this->getValue('neo_settings_scope_front');
+      if ($scope && $this->id() !== $scope) {
+        /** @var \Drupal\neo_settings\SettingsInterface $scope */
+        $scope = \Drupal::entityTypeManager()->getStorage('neo_settings')->load($scope);
+        if ($scope) {
+          $this->extendConfigValues($scope->getSettings());
+        }
+      }
+    }
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getExtendedValues() {
@@ -803,6 +881,19 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
   /**
    * {@inheritdoc}
    */
+  public function extendInstanceValues(array $configuration) {
+    $this->instanceConfiguration = $configuration;
+    $this->setValues(NestedArray::mergeDeepStrict(
+      $this->variationConfiguration,
+      $this->instanceConfiguration,
+    ));
+    $this->processScope();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function isVariation() {
     return !empty($this->variationId);
   }
@@ -810,8 +901,22 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
   /**
    * {@inheritdoc}
    */
+  public function allowVariations() {
+    return !empty($this->getPluginDefinition()['variation_allow']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function allowVariationConditions() {
     return !empty($this->getPluginDefinition()['variation_conditions']);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getVariationScopeKey(): ?string {
+    return $this->getPluginDefinition()['variation_scope'] ?? NULL;
   }
 
 }

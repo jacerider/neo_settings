@@ -71,6 +71,14 @@ interface SettingsInterface extends ValuesInterface, PluginInspectionInterface, 
   public function extractBaseSettingsFormValues(array $form, FormStateInterface $form_state);
 
   /**
+   * Returns a renderable array for the preview of the settings.
+   *
+   * @return array
+   *   The renderable array.
+   */
+  public function buildPreview();
+
+  /**
    * Returns the configuration form elements specific to this settings plugin.
    *
    * Most plugins should not override this method.
@@ -342,6 +350,23 @@ interface SettingsInterface extends ValuesInterface, PluginInspectionInterface, 
   public function hasVariationValue($key);
 
   /**
+   * Extends the instance values with the provided configuration.
+   *
+   * This method merges the provided configuration with the existing variation
+   * configuration and sets the resulting values. It also processes the scope
+   * after setting the values.
+   *
+   * These values will sit on top of all other values.
+   *
+   * @param array $configuration
+   *   An associative array containing the configuration values to extend the
+   *   instance with.
+   *
+   * @return $this
+   */
+  public function extendInstanceValues(array $configuration);
+
+  /**
    * Check if plugin instance is a variation.
    *
    * @return bool
@@ -350,11 +375,30 @@ interface SettingsInterface extends ValuesInterface, PluginInspectionInterface, 
   public function isVariation();
 
   /**
+   * Check if plugin instance allows variations.
+   *
+   * @return bool
+   *   Returns TRUE if plugin instance allows variations.
+   */
+  public function allowVariations();
+
+  /**
    * Check if plugin instance allow variation visibility conditions.
    *
    * @return bool
    *   Returns TRUE if plugin instance allow variation visibility conditions.
    */
   public function allowVariationConditions();
+
+  /**
+   * Get the variation scope key.
+   *
+   * This is the settings key that will be used to determine if the scope is
+   * enabled on a variation. If null, the scope is disabled.
+   *
+   * @return string|null
+   *   The variation scope key.
+   */
+  public function getVariationScopeKey(): ?string;
 
 }

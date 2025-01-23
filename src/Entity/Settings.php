@@ -112,6 +112,13 @@ class Settings extends ConfigEntityBase implements SettingsInterface, EntityWith
   protected $pluginCollection;
 
   /**
+   * Skip the plugin operation.
+   *
+   * @var bool
+   */
+  public $settingsPluginOperationSkip;
+
+  /**
    * {@inheritdoc}
    */
   public function save() {
@@ -163,7 +170,7 @@ class Settings extends ConfigEntityBase implements SettingsInterface, EntityWith
    * {@inheritdoc}
    */
   public function getParentId() {
-    return $this->parent;
+    return $this->parent ?: NULL;
   }
 
   /**
@@ -272,6 +279,7 @@ class Settings extends ConfigEntityBase implements SettingsInterface, EntityWith
       // allows variables to use other variables.
       $plugin = $this->pluginCollection->get($this->plugin);
       $plugin->addCacheableDependency($this);
+
       foreach (array_reverse($this->getParents()) as $parent) {
         $plugin->extendConfigValues($parent->getSettings());
       }

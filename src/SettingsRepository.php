@@ -104,6 +104,8 @@ class SettingsRepository implements SettingsRepositoryInterface {
       // When conditions are not allowed, return the core settings. Use ::get()
       // to load a specific variation.
       if (empty($this->pluginDefinition['variation_conditions'])) {
+        // When variation conditions are not allowed, return the clone core
+        // settings. We clone them to prevent changes to the core settings.
         $this->settings = $this->getCore();
       }
       else {

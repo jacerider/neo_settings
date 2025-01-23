@@ -7,7 +7,6 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Component\Serialization\Yaml;
-use Drupal\Core\Messenger\MessengerInterface;
 
 /**
  * Provides the Neo Settings plugin manager.
@@ -31,6 +30,7 @@ class SettingsManager extends DefaultPluginManager implements SettingsManagerInt
     'variation_label_plural' => 'variations',
     'variation_conditions' => TRUE,
     'variation_ordering' => TRUE,
+    'variation_scope' => NULL,
     'handlers' => [],
     'configuration' => [],
   ];
@@ -85,7 +85,7 @@ class SettingsManager extends DefaultPluginManager implements SettingsManagerInt
   /**
    * {@inheritDoc}
    */
-  public function createInstance($plugin_id, array $configuration = [], $variation_id = NULL) {
+  public function createInstance($plugin_id, array $configuration = [], string $variation_id = '') {
     $definition = $this->getDefinition($plugin_id);
     $configuration = [
       'config' => !empty($definition['config_name']) ? $this->configFactory->get($definition['config_name'])->getRawData() : [],

@@ -18,6 +18,7 @@ use Drupal\neo_settings\Plugin\SettingsBase;
  *   variation_allow = true,
  *   variation_conditions = true,
  *   variation_ordering = true,
+ *   variation_scope = NULL,
  * )
  */
 class NeoSettingsTestSettings extends SettingsBase {

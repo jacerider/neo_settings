@@ -5,6 +5,7 @@ namespace Drupal\neo_settings\Form;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
@@ -24,6 +25,13 @@ class SettingsConfigForm extends ConfigFormBase {
   protected $settingsManager;
 
   /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
+
+  /**
    * The Neo settings instance.
    *
    * @var \Drupal\neo_settings\Plugin\SettingsInterface
@@ -38,14 +46,23 @@ class SettingsConfigForm extends ConfigFormBase {
   protected $pluginId;
 
   /**
+   * All neo settings.
+   *
+   * @var \Drupal\neo_settings\SettingsInterface[]
+   */
+  protected $neoSettingsVariations;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(
     ConfigFactoryInterface $config_factory,
+    protected EntityTypeManagerInterface $entity_type_manager,
     protected SettingsManagerInterface $settings_manager,
     protected $typedConfigManager = NULL
   ) {
     parent::__construct($config_factory, $typedConfigManager);
+    $this->entityTypeManager = $entity_type_manager;
     $this->settingsManager = $settings_manager;
   }
 
@@ -55,6 +72,7 @@ class SettingsConfigForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new self(
       $container->get('config.factory'),
+      $container->get('entity_type.manager'),
       $container->get('plugin.manager.neo_settings'),
       $container->get('config.typed')
     );
@@ -101,6 +119,19 @@ class SettingsConfigForm extends ConfigFormBase {
   }
 
   /**
+   * Load settings instances.
+   */
+  protected function getSettingsVariations() {
+    if (!isset($this->neoSettingsVariations)) {
+      $this->neoSettingsVariations = $this->entityTypeManager->getStorage('neo_settings')->loadByProperties([
+        'status' => 1,
+        'plugin' => $this->getSettingsPluginId(),
+      ]);
+    }
+    return $this->neoSettingsVariations;
+  }
+
+  /**
    * Build neo settings form.
    *
    * @param array $form
@@ -121,6 +152,8 @@ class SettingsConfigForm extends ConfigFormBase {
       '#weight' => -100,
     ];
 
+    $form['preview'] = $plugin->buildPreview();
+
     $form['base'] = [
       '#parents' => ['base'],
     ];
@@ -133,6 +166,37 @@ class SettingsConfigForm extends ConfigFormBase {
     $subform_state = SubformState::createForSubform($form['instance'], $form, $form_state);
     $form['instance'] = $plugin->buildSettingsForm($form['instance'], $subform_state);
 
+    if ($plugin->allowVariations() && $plugin->getVariationScopeKey()) {
+      $options = array_map(function ($variation) {
+        return $variation->label();
+      }, $this->getSettingsVariations());
+      if ($options) {
+        $form['scope'] = [
+          '#type' => 'fieldset',
+          '#title' => $this->t('Scopes'),
+          '#description' => $this->t('Scopes allow you to merge settings from a @variation_label conditionally based on if you are on the frontend or backend of the site.', [
+            '@variation_label' => $plugin->getPluginDefinition()['variation_label'],
+          ]),
+          '#description_display' => 'before',
+        ];
+        $form['scope']['neo_settings_scope_front'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Frontend'),
+          '#options' => $options,
+          '#empty_option' => $this->t('- None -'),
+          '#default_value' => $plugin->getValue('neo_settings_scope_front'),
+        ];
+        $form['scope']['neo_settings_scope_back'] = [
+          '#type' => 'select',
+          '#title' => $this->t('Backend'),
+          '#options' => $options,
+          '#empty_option' => $this->t('- None -'),
+          '#default_value' => $plugin->getValue('neo_settings_scope_back'),
+        ];
+      }
+    }
+
+    $form['actions']['#weight'] = 1000;
     $form['actions']['reset'] = $this->getExoFormResetButton();
     return $form;
   }
@@ -186,6 +250,11 @@ class SettingsConfigForm extends ConfigFormBase {
     $settings = $this->config($this->getSettingsConfigName());
     $plugin = $this->settingsInstance();
 
+    if ($plugin->allowVariations()) {
+      $settings->set('neo_settings_scope_front', $form_state->getValue('neo_settings_scope_front'));
+      $settings->set('neo_settings_scope_back', $form_state->getValue('neo_settings_scope_back'));
+    }
+
     $subform_state = SubformState::createForSubform($form['base'], $form, $form_state);
     $base_values = $plugin->extractBaseSettingsFormValues($form['base'], $subform_state);
 
@@ -199,6 +268,7 @@ class SettingsConfigForm extends ConfigFormBase {
     foreach ($values as $key => $value) {
       $settings->set($key, $value);
     }
+
     $settings->save();
     Cache::invalidateTags($settings->getCacheTags());
   }
