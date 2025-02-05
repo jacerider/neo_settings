@@ -114,7 +114,7 @@ class NeoSettings extends RenderElementBase {
     }
     /** @var \Drupal\neo_settings\Plugin\SettingsInterface $settings */
     $settings = $manager->createInstance($element['#settings_id'], $element['#default_value'], 'instance');
-    if ($element['#settings_variation']) {
+    if ($element['#settings_variation'] ?? NULL) {
       /** @var \Drupal\neo_settings\SettingsInterface $variation */
       $variation = \Drupal::entityTypeManager()->getStorage('neo_settings')->load($element['#settings_variation']);
       if ($variation) {

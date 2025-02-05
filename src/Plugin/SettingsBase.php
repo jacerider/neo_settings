@@ -322,37 +322,36 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
    */
   public function attachSettingsFormToggles(array $form, FormStateInterface $form_state) {
     $trigger = $form_state->getTriggeringElement();
-    if ($trigger && NestedArray::getValue($form, array_diff($form['#array_parents'], $trigger['#array_parents']))) {
-      // Do not process when ajax is triggered from setting elements.
-      return $form;
-    }
+    $ajaxFromInside = $trigger && NestedArray::getValue($form, array_diff($form['#array_parents'], $trigger['#array_parents']));
     $form['#element_validate'][] = [__CLASS__, 'removeDefaultValues'];
     $elements = $this->overrideParentsElements($form, $form_state);
     foreach ($elements as $element) {
       $parents = [end($element['#parents'])];
-      $array_parents = array_slice($element['#array_parents'], count($form['#parents']));
+      $array_parents = array_slice($element['#array_parents'], count($form['#array_parents']));
       $setting_parents = $element['#setting_parents'] ?? $parents;
       $element = NestedArray::getValue($form, $array_parents);
       if ($element) {
         $id = Html::getId('neo-setting-override-' . implode('-', $element['#parents']));
         $element['#states']['visible']['#' . $id] = ['checked' => FALSE];
-        $element['#neo_settings_override'] = [
-          '#type' => 'checkbox',
-          '#title' => t('@label: Use Default', [
-            '@label' => $element['#title'],
-          ]),
-          '#parents' => array_merge(['_override'], [
-            implode('_', $parents),
-          ]),
-          '#return_value' => implode(':', $element['#parents']),
-          '#id' => $id,
-          '#default_value' => !$this->hasVariationValue($setting_parents),
-          '#wrapper_attributes' => [
-            'class' => ['!m-0'],
-          ],
-        ];
-        $element['#pre_render'][] = [$this, 'preRenderSettingsFormToggles'];
-        $this->formBuilder->doBuildForm('neo_settings_override', $element['#neo_settings_override'], $form_state);
+        if (!$ajaxFromInside) {
+          $element['#neo_settings_override'] = [
+            '#type' => 'checkbox',
+            '#title' => isset($element['#title']) ? $this->t('@label: Use Default', [
+              '@label' => $element['#title'],
+            ]) : $this->t('Use Default'),
+            '#parents' => array_merge(['_override'], [
+              implode('_', $parents),
+            ]),
+            '#return_value' => implode(':', $element['#parents']),
+            '#id' => $id,
+            '#default_value' => !$this->hasVariationValue($setting_parents),
+            '#wrapper_attributes' => [
+              'class' => ['!m-0'],
+            ],
+          ];
+          $this->formBuilder->doBuildForm('neo_settings_override', $element['#neo_settings_override'], $form_state);
+          $element['#pre_render'][] = [$this, 'preRenderSettingsFormToggles'];
+        }
         NestedArray::setValue($form, $array_parents, $element);
       }
     }
@@ -430,7 +429,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
    */
   public static function removeDefaultValues(array $element, FormStateInterface $form_state) {
     $values = $form_state->getValues();
-    foreach (array_filter($values['_override']) as $parents) {
+    foreach (array_filter($values['_override'] ?? []) as $parents) {
       $parents = explode(':', $parents);
       NestedArray::unsetValue($values, $parents);
     }
