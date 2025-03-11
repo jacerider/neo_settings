@@ -502,6 +502,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
    * {@inheritdoc}
    */
   public function extractSettingsFormValues(array $form, FormStateInterface $form_state) {
+    $this->buildStrictParents($form, $form_state);
     $values = $form_state->getValues();
     $values = $this->extractFormValues($values, $form, $form_state) ?: [];
     $merged_values = NestedArray::mergeDeepStrict(
@@ -591,6 +592,42 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
         NestedArray::setValue($all_values, $parents, $strictValue);
       }
     }
+  }
+
+  /**
+   * Attach strict parents for multi-value fields.
+   *
+   * @param array $form
+   *   A nested array of form elements comprising the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   A nested array of form elements comprising the form.
+   */
+  public function buildStrictParents(array $form, FormStateInterface $form_state) {
+    foreach (Element::children($form) as $key) {
+      $element = $form[$key];
+      if (is_array($element) && isset($element['#parents'])) {
+        $parents = $element['#parents'];
+        array_shift($parents);
+        if (isset($element['#type'])) {
+          switch ($element['#type']) {
+            case 'checkboxes':
+              $this->strictParents[] = $parents;
+              break;
+
+            case 'select':
+              if ($element['#multiple']) {
+                $this->strictParents[] = $parents;
+              }
+              break;
+          }
+        }
+        $form[$key] = $this->buildStrictParents($element, $form_state);
+      }
+    }
+    return $form;
   }
 
   /**
