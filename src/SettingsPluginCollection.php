@@ -45,7 +45,7 @@ class SettingsPluginCollection extends DefaultSingleLazyPluginCollection {
     private readonly ModuleHandlerInterface $moduleHandler,
     $instance_id,
     array $configuration,
-    $settings_id
+    $settings_id,
   ) {
     $this->settingsId = $settings_id ?: 'new';
     parent::__construct($manager, $instance_id, $configuration);

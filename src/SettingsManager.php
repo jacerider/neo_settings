@@ -52,7 +52,7 @@ class SettingsManager extends DefaultPluginManager implements SettingsManagerInt
     \Traversable $namespaces,
     CacheBackendInterface $cache_backend,
     ModuleHandlerInterface $module_handler,
-    protected readonly ConfigFactoryInterface $configFactory
+    protected readonly ConfigFactoryInterface $configFactory,
   ) {
     parent::__construct('Settings', $namespaces, $module_handler, 'Drupal\neo_settings\Plugin\SettingsInterface', 'Drupal\neo_settings\Annotation\Settings');
     $this->alterInfo('neo_settings_info');

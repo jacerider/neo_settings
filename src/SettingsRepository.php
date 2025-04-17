@@ -75,7 +75,7 @@ class SettingsRepository implements SettingsRepositoryInterface {
     EntityTypeManagerInterface $entity_type_manager,
     SettingsManagerInterface $settings_manager,
     RouteMatchInterface $route_match,
-    $plugin_id
+    $plugin_id,
   ) {
     $this->pluginId = $plugin_id;
     $this->pluginDefinition = $settings_manager->getDefinition($plugin_id);

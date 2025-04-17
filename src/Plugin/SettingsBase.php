@@ -133,7 +133,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
     $plugin_id,
     $plugin_definition,
     MessengerInterface $messenger,
-    FormBuilderInterface $form_builder
+    FormBuilderInterface $form_builder,
   ) {
     $this->pluginId = $plugin_id;
     $this->configuration = [];

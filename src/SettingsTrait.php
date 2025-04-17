@@ -24,7 +24,7 @@ trait SettingsTrait {
    * @return \Drupal\neo_settings\Plugin\SettingsInterface
    *   The settings.
    */
-  protected function getSettings(array $settings = [], string $variationId = NULL): SettingsInterface {
+  protected function getSettings(array $settings = [], ?string $variationId = NULL): SettingsInterface {
     if (!isset($this->settings)) {
       assert(isset($this->settingsId), 'Settings ID is not set.');
       /** @var \Drupal\neo_settings\SettingsRepositoryInterface $repository */

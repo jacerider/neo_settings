@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace Drupal\neo_settings\Controller;
 
@@ -193,7 +193,7 @@ class SettingsController extends ControllerBase {
    * @return string
    *   The title.
    */
-  protected function generatePluginTitle($title, $plugin_id, SettingsInterface $neo_settings = NULL) {
+  protected function generatePluginTitle($title, $plugin_id, ?SettingsInterface $neo_settings = NULL) {
     $plugin_definition = $this->pluginManagerNeoSettings->getDefinition($plugin_id);
     $entity_type = $this->entityTypeManager()->getDefinition('neo_settings');
     return $this->t($title, [ // phpcs:ignore
