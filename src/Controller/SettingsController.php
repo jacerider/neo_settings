@@ -199,7 +199,7 @@ class SettingsController extends ControllerBase {
     return $this->t($title, [ // phpcs:ignore
       '@entity-type' => ucwords((string) $entity_type->getSingularLabel()),
       '@plugin_label' => ucwords((string) $plugin_definition['label']),
-      '@entity-label' => $neo_settings ? $neo_settings->label() : NULL,
+      '@entity-label' => $neo_settings ? $neo_settings->label() : '',
       '@variation-label' => ucwords($plugin_definition['variation_label']),
       '@variation-label-plural' => ucwords($plugin_definition['variation_label_plural']),
     ]);
