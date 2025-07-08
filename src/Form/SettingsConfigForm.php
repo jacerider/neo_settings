@@ -5,6 +5,7 @@ namespace Drupal\neo_settings\Form;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -59,7 +60,7 @@ class SettingsConfigForm extends ConfigFormBase {
     ConfigFactoryInterface $config_factory,
     protected EntityTypeManagerInterface $entity_type_manager,
     protected SettingsManagerInterface $settings_manager,
-    protected $typedConfigManager = NULL,
+    protected TypedConfigManagerInterface $typedConfigManager,
   ) {
     parent::__construct($config_factory, $typedConfigManager);
     $this->entityTypeManager = $entity_type_manager;
