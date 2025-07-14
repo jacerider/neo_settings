@@ -60,7 +60,7 @@ class SettingsConfigForm extends ConfigFormBase {
     ConfigFactoryInterface $config_factory,
     protected EntityTypeManagerInterface $entity_type_manager,
     protected SettingsManagerInterface $settings_manager,
-    protected TypedConfigManagerInterface $typedConfigManager,
+    TypedConfigManagerInterface|null $typedConfigManager,
   ) {
     parent::__construct($config_factory, $typedConfigManager);
     $this->entityTypeManager = $entity_type_manager;
