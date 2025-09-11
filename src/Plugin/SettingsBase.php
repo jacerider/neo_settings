@@ -840,7 +840,9 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
         /** @var \Drupal\neo_settings\SettingsInterface $scope */
         $scope = \Drupal::entityTypeManager()->getStorage('neo_settings')->load($scope);
         if ($scope) {
-          $this->extendConfigValues($scope->getSettings());
+          $scopeSettings = $scope->getSettings();
+          unset($scopeSettings['scope']);
+          $this->extendConfigValues($scopeSettings);
         }
       }
     }
