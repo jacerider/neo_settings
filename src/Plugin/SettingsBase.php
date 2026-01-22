@@ -301,7 +301,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
       $form = $this->buildForm($form, $form_state);
     }
 
-    if ($this->isVariation()) {
+    if ($this->isVariation() && (isset($form['#allow_variation']) && $form['#allow_variation'] !== FALSE)) {
       $form['#after_build'][] = [$this, 'attachSettingsFormToggles'];
     }
 
