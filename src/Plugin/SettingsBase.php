@@ -140,7 +140,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
 
     // Prepare settings for use.
     $plugin_definition['configuration'] = $this->prepareValues($plugin_definition['configuration'], '_default');
-    $configuration['config'] = $this->prepareValues($configuration['config'], 'config');
+    $configuration['config'] = $this->prepareValues($configuration['config'], 'config') + $plugin_definition['configuration'];
     $configuration['variation'] = $this->prepareValues($configuration['variation'], 'variation');
     $this->pluginDefinition = $plugin_definition;
     $this->configConfiguration = $configuration['config'];
@@ -301,7 +301,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
       $form = $this->buildForm($form, $form_state);
     }
 
-    if ($this->isVariation() && (isset($form['#allow_variation']) && $form['#allow_variation'] !== FALSE)) {
+    if ($this->isVariation() || (isset($form['#allow_variation']) && $form['#allow_variation'] !== FALSE)) {
       $form['#after_build'][] = [$this, 'attachSettingsFormToggles'];
     }
 
