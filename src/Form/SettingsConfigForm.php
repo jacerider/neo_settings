@@ -251,7 +251,13 @@ class SettingsConfigForm extends ConfigFormBase {
     $settings = $this->config($this->getSettingsConfigName());
     $plugin = $this->settingsInstance();
 
-    if ($plugin->allowVariations()) {
+    // Only persist the scope targets when the scope UI was actually built.
+    // ::buildForm() gates that on allowVariations() AND a variation_scope key
+    // AND at least one variation existing; writing under the looser
+    // allowVariations() alone put two undeclared keys into the config of every
+    // scopeless plugin, and wiped a configured scope whenever the fieldset was
+    // skipped for want of variations.
+    if ($form_state->hasValue('neo_settings_scope_front')) {
       $settings->set('neo_settings_scope_front', $form_state->getValue('neo_settings_scope_front'));
       $settings->set('neo_settings_scope_back', $form_state->getValue('neo_settings_scope_back'));
     }
