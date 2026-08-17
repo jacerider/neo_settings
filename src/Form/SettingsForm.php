@@ -133,22 +133,15 @@ class SettingsForm extends EntityForm implements SettingsFormInterface {
         ],
       ];
 
-      $user_input = $form_state->getUserInput();
-      if ($user_input) {
+      if ($form_state->getUserInput()) {
         if ($parent_id) {
           $extendedNeoSettings = $this->getSettings($form_state->getValue('parent'));
           if ($extendedNeoSettings) {
-            $user_input['settings'] = $this->prepareDefaultUserInput($user_input['settings'], $user_input['_override']);
-            $form_state->setUserInput($user_input);
             $neoSettings->getPlugin()->extendConfigValues($extendedNeoSettings->getPlugin()->getValues());
           }
         }
-        else {
-          if ($neoSettings->getPlugin()->isExtended()) {
-            $user_input['settings'] = $this->prepareDefaultUserInput($user_input['settings'], $user_input['_override']);
-            $form_state->setUserInput($user_input);
-            $neoSettings->getPlugin()->unextendConfigValues();
-          }
+        elseif ($neoSettings->getPlugin()->isExtended()) {
+          $neoSettings->getPlugin()->unextendConfigValues();
         }
       }
     }
@@ -170,36 +163,6 @@ class SettingsForm extends EntityForm implements SettingsFormInterface {
     }
 
     return $form;
-  }
-
-  /**
-   * Remove values set as _default.
-   *
-   * @param array $values
-   *   The values.
-   * @param array $overrides
-   *   The overrides.
-   * @param array $path
-   *   The path.
-   *
-   * @return array
-   *   The remaining values.
-   */
-  protected function prepareDefaultUserInput(array $values, array $overrides, $path = ['settings']) {
-    foreach ($values as $key => $value) {
-      $valuePath = array_merge($path, [$key]);
-      $valueKey = implode('_', $valuePath);
-      if (isset($overrides[$valueKey]) && !empty($overrides[$valueKey])) {
-        unset($values[$key]);
-      }
-      elseif (is_array($value)) {
-        $values[$key] = $this->prepareDefaultUserInput($value, $overrides, $valuePath);
-        if (empty($values[$key])) {
-          unset($values[$key]);
-        }
-      }
-    }
-    return $values;
   }
 
   /**
