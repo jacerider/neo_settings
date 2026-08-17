@@ -1,0 +1,8 @@
+name: 'Neo | Settings | Test'
+type: module
+description: 'Fixture module for neo_settings kernel tests: a Settings plugin exercising the merge algebra (strict parents, nested values, base vs instance) plus a repository service.'
+package: Testing
+hidden: true
+core_version_requirement: ^10.3 || ^11
+dependencies:
+  - neo_settings:neo_settings

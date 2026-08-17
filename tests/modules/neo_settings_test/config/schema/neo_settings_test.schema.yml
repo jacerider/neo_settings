@@ -1,0 +1,58 @@
+# Schema for the neo_settings test fixture.
+#
+# Two config objects share one shape:
+#  - neo_settings_test.settings                  the plugin's base config
+#  - neo_settings.settings.neo_settings_test     a variation's `settings` key,
+#    resolved by neo_settings.schema.yml via
+#    `type: neo_settings.settings.[%parent.plugin]`
+#
+# A variation stores only the keys it overrides, so every key must be optional.
+# This type is not FullyValidatable, so absent keys are permitted.
+
+neo_settings_test.settings:
+  type: neo_settings_test
+  mapping:
+    _core:
+      # Added by the config installer; only exists for merging configuration.
+      requiredKey: false
+      type: _core_config_info
+
+neo_settings.settings.neo_settings_test:
+  type: neo_settings_test
+
+neo_settings_test:
+  type: mapping
+  label: 'Neo Settings Test settings'
+  mapping:
+    global:
+      type: string
+      label: 'Global'
+    input:
+      type: string
+      label: 'Input'
+    value_single:
+      type: string
+      label: 'Value: Single'
+    value_multiple:
+      type: sequence
+      label: 'Value: Multiple'
+      sequence:
+        type: string
+        label: 'Value'
+    value_boolean:
+      type: boolean
+      label: 'Value: Boolean'
+    nested:
+      type: mapping
+      label: 'Nested'
+      mapping:
+        input:
+          type: string
+          label: 'Nested Input'
+        deep:
+          type: mapping
+          label: 'Deep Nested'
+          mapping:
+            input:
+              type: string
+              label: 'Deep Nested Input'

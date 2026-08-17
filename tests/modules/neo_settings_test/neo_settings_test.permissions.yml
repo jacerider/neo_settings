@@ -1,0 +1,4 @@
+administer neo settings test:
+  title: 'Administer Neo Settings Test'
+  description: 'Configure the neo_settings test fixture and its variations.'
+  restrict access: TRUE
