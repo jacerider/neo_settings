@@ -34,8 +34,12 @@ class NeoSettings extends RenderElementBase {
     return [
       '#title' => '',
       '#settings_id' => '',
-      // Useful for passing in configuration to the settings form.
-      '#settings_config' => '',
+      // Useful for passing in configuration to the settings form. Merged as an
+      // array by SettingsBase::setFormConfigValues(), so it defaults to one.
+      '#settings_config' => [],
+      // Optional variation id whose values are overlaid on the plugin before
+      // the form is built. Read in ::getSettings().
+      '#settings_variation' => NULL,
       '#default_value' => [],
       '#process' => [
         [$class, 'processGroup'],
@@ -66,14 +70,23 @@ class NeoSettings extends RenderElementBase {
    *   The processed element.
    */
   public static function processSettings(&$element, FormStateInterface $form_state, &$complete_form) {
+    // A #process callback's return value REPLACES the element, so returning an
+    // empty array here would destroy #type, #parents and #theme_wrappers — the
+    // element would vanish silently and stop round tripping its stored value.
+    // Keep it a valid element, hide it, and say so in the log.
     if (empty($element['#settings_id'])) {
-      return [];
+      \Drupal::logger('neo_settings')->error('A neo_settings element was built without a #settings_id and has been hidden.');
+      $element['#access'] = FALSE;
+      return $element;
     }
     $settings = self::getSettings($element);
     if (!$settings) {
-      return [];
+      \Drupal::logger('neo_settings')->error('The neo_settings plugin %id does not exist; its element has been hidden.', [
+        '%id' => $element['#settings_id'],
+      ]);
+      $element['#access'] = FALSE;
+      return $element;
     }
-    /** @var \Drupal\neo_image\Settings\Settings $settings */
     $element = $settings->buildSettingsForm($element, $form_state);
     $element['#element_validate'][] = [static::class, 'elementValidate'];
     $element['#summary_attributes'] = [];
@@ -89,6 +102,10 @@ class NeoSettings extends RenderElementBase {
    */
   public static function elementValidate($element, FormStateInterface $form_state, $form) {
     $settings = self::getSettings($element);
+    // ::getSettings() is nullable and is honoured as such in ::processSettings.
+    if (!$settings) {
+      return;
+    }
 
     $subform_state = SubformState::createForSubform($element, $form, $form_state);
     $settings->validateSettingsForm($element, $subform_state);
