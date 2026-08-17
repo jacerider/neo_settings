@@ -325,10 +325,17 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
     $ajaxFromInside = $trigger && NestedArray::getValue($form, array_diff($form['#array_parents'], $trigger['#array_parents']));
     $form['#element_validate'][] = [__CLASS__, 'removeDefaultValues'];
     $elements = $this->overrideParentsElements($form, $form_state);
+    $settings_depth = count($form['#parents'] ?? []);
     foreach ($elements as $element) {
       $parents = [end($element['#parents'])];
       $array_parents = array_slice($element['#array_parents'], count($form['#array_parents']));
-      $setting_parents = $element['#setting_parents'] ?? $parents;
+      // A variation stores its values relative to the settings root, so the
+      // "Use Default" probe must use the element's settings-relative path.
+      // Probing with the leaf name alone makes every nested value look unset:
+      // the box is pre-checked, and ::removeDefaultValues() then decodes the
+      // correct full path from #return_value and strips the stored value on
+      // save — so a nested setting can never be persisted through the UI.
+      $setting_parents = $element['#setting_parents'] ?? array_slice($element['#parents'], $settings_depth);
       $element = NestedArray::getValue($form, $array_parents);
       if ($element) {
         $id = Html::getId('neo-setting-override-' . implode('-', $element['#parents']));
