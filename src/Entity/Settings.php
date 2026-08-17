@@ -2,6 +2,7 @@
 
 namespace Drupal\neo_settings\Entity;
 
+use Drupal\Core\Cache\Cache;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -112,9 +113,17 @@ class Settings extends ConfigEntityBase implements SettingsInterface, EntityWith
   protected $pluginCollection;
 
   /**
-   * Skip the plugin operation.
+   * Suppresses the delete cascade for an entity already in the delete batch.
    *
-   * @var bool
+   * Only the delete path still cascades, because ::postDelete() performs a real
+   * data change (reparenting orphaned children). Saving no longer cascades, so
+   * this flag has no effect there.
+   *
+   * Set from outside the entity — by ::postDelete() and by ConfigSubscriber
+   * when a plugin's whole set of variations is removed together. It is tested
+   * with isset(), so any value, including FALSE, suppresses the cascade.
+   *
+   * @var true|null
    */
   public $settingsPluginOperationSkip;
 
@@ -135,11 +144,22 @@ class Settings extends ConfigEntityBase implements SettingsInterface, EntityWith
     parent::postSave($storage, $update);
     $this->pluginCollection = NULL;
     $this->getPlugin()->save();
-    if (!isset($this->settingsPluginOperationSkip)) {
-      foreach ($this->getChildren() as $child) {
-        $child->settingsPluginOperationSkip = TRUE;
-        $child->save();
-      }
+    // Descendants overlay this entity's settings at read time, so a change here
+    // changes their effective values — but not their stored data. Invalidate
+    // their cache tags directly rather than re-saving each one, which wrote
+    // byte-identical config purely to trigger these invalidations.
+    //
+    // The invalidation itself is load-bearing: consumers cache against
+    // `config:neo_settings.variation.<id>` without ancestor tags, so dropping
+    // it would leave descendant output stale indefinitely.
+    //
+    // ::getChildren() walks the whole subtree, so no recursion guard is needed.
+    $tags = [];
+    foreach ($this->getChildren() as $child) {
+      $tags[] = 'config:' . $child->getConfigDependencyName();
+    }
+    if ($tags) {
+      Cache::invalidateTags($tags);
     }
   }
 

@@ -58,17 +58,13 @@ class ConfigSubscriber implements EventSubscriberInterface {
   public function onConfigSave(ConfigCrudEvent $event) {
     $config = $event->getConfig();
     if ($definition = $this->settingsManager->getDefinitionByConfigName($config->getName())) {
-      $plugin = $this->settingsManager->createInstance($definition['id']);
       // Triggered when core config is saved.
-      $plugin->save();
-      // All variations use this configuration as their base. We want to resave
-      // them in this instance.
-      foreach ($this->entityTypeManager->getStorage('neo_settings')->loadByProperties([
-        'plugin' => $definition['id'],
-      ]) as $entity) {
-        $entity->settingsPluginOperationSkip = TRUE;
-        $entity->save();
-      }
+      $this->settingsManager->createInstance($definition['id'])->save();
+      // Variations are deliberately NOT re-saved here. Every plugin instance —
+      // core and variation alike — already carries this config object's cache
+      // tag (see SettingsManager::createInstance()), and Config::save() has
+      // just invalidated it. Re-saving each variation wrote a config object per
+      // variation to accomplish nothing.
     }
   }
 
