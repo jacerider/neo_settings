@@ -109,7 +109,7 @@ class SettingsRepository implements SettingsRepositoryInterface {
         $this->settings = $this->getCore();
       }
       else {
-        $settings = $this->getAvailable($checkAccess);
+        $settings = $this->getAll($checkAccess);
         $this->settings = reset($settings);
       }
     }
@@ -120,20 +120,15 @@ class SettingsRepository implements SettingsRepositoryInterface {
    * {@inheritDoc}
    */
   public function get($variationId, $checkAccess = TRUE) {
-    $coreId = $this->getCore()->id();
-    if (substr($variationId, 0, strlen($coreId)) !== $coreId) {
-      // Allow provided a variation ID without the core ID.
-      $variationId = $coreId . '_' . $variationId;
+    $settings = $this->getAll($checkAccess);
+    // Try the id as given first, so the bare plugin id still resolves to the
+    // core instance, then fall back to the short form without the plugin
+    // prefix. Testing the prefix with substr() instead would treat a variation
+    // whose own name begins with the plugin id as already-prefixed and miss it.
+    if (isset($settings[$variationId])) {
+      return $settings[$variationId];
     }
-    $settings = $this->getAvailable($checkAccess);
-    return $settings[$variationId] ?? $this->getActive($checkAccess);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public function getAvailable($checkAccess = TRUE) {
-    return $this->getAll($checkAccess);
+    return $settings[$this->getCore()->id() . '_' . $variationId] ?? NULL;
   }
 
   /**

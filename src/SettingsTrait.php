@@ -29,7 +29,7 @@ trait SettingsTrait {
       assert(isset($this->settingsId), 'Settings ID is not set.');
       /** @var \Drupal\neo_settings\SettingsRepositoryInterface $repository */
       $repository = \Drupal::service($this->settingsId);
-      $this->settings = isset($variationId) ? $repository->get($variationId) : $repository->getActive();
+      $this->settings = (isset($variationId) ? $repository->get($variationId) : NULL) ?? $repository->getActive();
       if ($settings) {
         // If settings are supplied, we overlay them on top of all other
         // settings.

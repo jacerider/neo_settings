@@ -10,36 +10,29 @@ interface SettingsRepositoryInterface {
   /**
    * Return the active settings instance.
    *
+   * @param bool $checkAccess
+   *   If true, will check access.
+   *
    * @return \Drupal\neo_settings\Plugin\SettingsInterface
    *   The active settings instance.
    */
-  public function getActive();
+  public function getActive($checkAccess = TRUE);
 
   /**
    * Return the settings instance by variation ID.
    *
-   * If the variation is not found, the active settings will be returned.
+   * Accepts either the full id or the short form without the plugin prefix. A
+   * disabled variation counts as a miss.
    *
    * @param string $variationId
    *   The variation ID.
    * @param bool $checkAccess
    *   If true, will check access.
    *
-   * @return \Drupal\neo_settings\Plugin\SettingsInterface
-   *   The settings instance.
+   * @return \Drupal\neo_settings\Plugin\SettingsInterface|null
+   *   The settings instance, or NULL when the variation does not resolve.
    */
   public function get($variationId, $checkAccess = TRUE);
-
-  /**
-   * Return the settings instances available as an active instance.
-   *
-   * @param bool $checkAccess
-   *   If true, will check access.
-   *
-   * @return \Drupal\neo_settings\Plugin\SettingsInterface[]
-   *   All available settings instances.
-   */
-  public function getAvailable($checkAccess = TRUE);
 
   /**
    * Return all settings.
