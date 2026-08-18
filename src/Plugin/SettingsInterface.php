@@ -229,10 +229,13 @@ interface SettingsInterface extends ValuesInterface, PluginInspectionInterface, 
   public function getDiffConfigValue($key, $default = NULL);
 
   /**
-   * Merge an array of settings with the current settings.
+   * Merge an array of settings arrays together.
+   *
+   * Note this does NOT merge against the plugin's current values, despite the
+   * name; callers combine already-extracted form values with it.
    *
    * @param array $value_arrays
-   *   An array of settings.
+   *   An array of settings arrays, later ones winning.
    *
    * @return array
    *   The merged settings.

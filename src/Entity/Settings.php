@@ -215,23 +215,6 @@ class Settings extends ConfigEntityBase implements SettingsInterface, EntityWith
   /**
    * {@inheritdoc}
    */
-  public function getParentRoot() {
-    $parent_id = $this->getParentId();
-    if ($parent_id) {
-      if ($parent = \Drupal::entityTypeManager()->getStorage('neo_settings')->load($parent_id)) {
-        /** @var \Drupal\neo_settings\SettingsInterface $parent */
-        if ($nested_parent = $parent->getParent()) {
-          return $nested_parent;
-        }
-        return $parent;
-      }
-    }
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getParentIds() {
     $parents = [];
     foreach ($this->getParents() as $parent) {

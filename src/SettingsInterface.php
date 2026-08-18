@@ -38,14 +38,6 @@ interface SettingsInterface extends ConfigEntityInterface, VisibilityEntityInter
   public function getParent();
 
   /**
-   * Return the parent entity after following all parents.
-   *
-   * @return \Drupal\neo_settings\SettingsInterface
-   *   The parent entity.
-   */
-  public function getParentRoot();
-
-  /**
    * Return the parent path as ids.
    *
    * @return array

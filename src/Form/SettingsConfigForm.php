@@ -268,8 +268,9 @@ class SettingsConfigForm extends ConfigFormBase {
     $subform_state = SubformState::createForSubform($form['instance'], $form, $form_state);
     $instance_values = $plugin->extractSettingsFormValues($form['instance'], $subform_state);
 
-    // Merge values with current. This allows different parts of the form to
-    // be saved seperately without loosing the values of the other parts.
+    // Combine the base and instance halves of the form into one value set.
+    // Keys absent from both are left untouched in config below, because the
+    // save loop sets keys individually rather than replacing the whole object.
     $values = $plugin->mergeValuesWithCurrent([$base_values, $instance_values]);
 
     foreach ($values as $key => $value) {

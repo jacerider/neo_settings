@@ -444,32 +444,6 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
   }
 
   /**
-   * All children of a toggle element need to be moved up one level.
-   *
-   * @param array $element
-   *   A toggle element.
-   * @param int $parents_key
-   *   The parent key to remove.
-   * @param int $array_parents_key
-   *   The array parents key to remove.
-   *
-   * @return array
-   *   A nested array of form elements comprising the form.
-   */
-  protected function detachSettingsFormToggleParents(array $element, $parents_key = NULL, $array_parents_key = NULL) {
-    $parents_key = $parents_key ?: array_key_last($element['#parents']);
-    $array_parents_key = $array_parents_key ?: array_key_last($element['#array_parents']);
-    unset($element['#parents'][$parents_key]);
-    unset($element['#array_parents'][$array_parents_key]);
-    $element['#parents'] = array_values($element['#parents']);
-    $element['#array_parents'] = array_values($element['#array_parents']);
-    foreach (Element::children($element) as $key) {
-      $element[$key] = $this->detachSettingsFormToggleParents($element[$key], $parents_key, $array_parents_key);
-    }
-    return $element;
-  }
-
-  /**
    * Returns the configuration form elements specific to this settings plugin.
    *
    * Should be used by most plugins when implementing the settings form.
@@ -579,13 +553,7 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
    * {@inheritdoc}
    */
   public function mergeValuesWithCurrent(array $value_arrays) {
-    $values = NestedArray::mergeDeepArrayStrict($value_arrays);
-    $merged_values = NestedArray::mergeDeepArrayStrict([
-      $this->getValues(),
-      $values,
-    ]);
-    $this->mergeStrictParentValues($merged_values, $values);
-    return $values;
+    return NestedArray::mergeDeepArrayStrict($value_arrays);
   }
 
   /**
