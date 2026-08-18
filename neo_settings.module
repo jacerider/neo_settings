@@ -50,8 +50,8 @@ function neo_settings_preprocess_fieldset(&$variables) {
     }))) {
       return;
     }
-    // $variables['fieldset_wrapper_attributes']['class'][] = 'js-form-wrapper';
-    // $variables['fieldset_wrapper_attributes']['data-drupal-states'] = $variables['attributes']['data-drupal-states'];
+    // $variables['fieldset_wrapper_attributes']['class'][] =
+    // 'js-form-wrapper';
     $variables['attributes'] = [];
     $variables['attributes']['class'][] = 'neo-settings-override';
     $variables['legend']['title'] = $variables['element']['#neo_settings_override'];
