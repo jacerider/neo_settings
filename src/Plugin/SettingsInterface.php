@@ -356,8 +356,8 @@ interface SettingsInterface extends ValuesInterface, PluginInspectionInterface, 
    * Extends the instance values with the provided configuration.
    *
    * This method merges the provided configuration with the existing variation
-   * configuration and sets the resulting values. It also processes the scope
-   * after setting the values.
+   * configuration and sets the resulting values. Front/back scope is resolved
+   * by the settings repository, not here.
    *
    * These values will sit on top of all other values.
    *

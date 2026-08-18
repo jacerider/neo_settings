@@ -16,6 +16,12 @@ neo_settings_test.settings:
       # Added by the config installer; only exists for merging configuration.
       requiredKey: false
       type: _core_config_info
+    neo_settings_scope_front:
+      type: string
+      label: 'Frontend scope target'
+    neo_settings_scope_back:
+      type: string
+      label: 'Backend scope target'
 
 neo_settings.settings.neo_settings_test:
   type: neo_settings_test
@@ -42,6 +48,9 @@ neo_settings_test:
     value_boolean:
       type: boolean
       label: 'Value: Boolean'
+    scope:
+      type: boolean
+      label: 'Allow Scope'
     nested:
       type: mapping
       label: 'Nested'

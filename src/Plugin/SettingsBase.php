@@ -760,56 +760,6 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
   }
 
   /**
-   * Processes the scope for the current settings.
-   *
-   * This method dynamically applies scope-based extended values based on the
-   * current context (admin or front). It checks if the 'neo_settings_scope'
-   * value is set and determines the appropriate scope to use (admin or front).
-   * If a valid scope is found and it is different from the current scope, it
-   * loads the corresponding settings entity and extends the configuration
-   * values with the settings from the loaded scope.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\PluginException
-   *   Thrown if the entity type manager cannot load the 'neo_settings' storage.
-   */
-  protected function processScope() {
-    // Dynamically apply scope-based extended values.
-    $scopeKey = $this->getVariationScopeKey();
-    if ($scopeKey && $this->getValue($scopeKey)) {
-      $scope = $this->isAdminRoute() ? $this->getValue('neo_settings_scope_back') : $this->getValue('neo_settings_scope_front');
-      if ($scope && $this->id() !== $scope) {
-        /** @var \Drupal\neo_settings\SettingsInterface $scope */
-        $scope = \Drupal::entityTypeManager()->getStorage('neo_settings')->load($scope);
-        if ($scope) {
-          $scopeSettings = $scope->getSettings();
-          unset($scopeSettings['scope']);
-          $this->extendConfigValues($scopeSettings);
-        }
-      }
-    }
-  }
-
-  /**
-   * Checks if the current route is an admin route.
-   *
-   * This method checks if the current user has permission to view the
-   * administration theme. If they do, it returns FALSE, indicating that the
-   * route is not an admin route. Otherwise, it checks the admin context to
-   * determine if the current route is an admin route.
-   *
-   * @return bool
-   *   TRUE if the current route is an admin route, FALSE otherwise.
-   */
-  protected function isAdminRoute() {
-    $allow = \Drupal::currentUser()->hasPermission('view the administration theme');
-    if (!$allow) {
-      return FALSE;
-    }
-    $adminContext = \Drupal::service('router.admin_context');
-    return $adminContext->isAdminRoute();
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getExtendedValues() {
@@ -885,7 +835,6 @@ abstract class SettingsBase extends PluginBase implements SettingsInterface, Tru
       $this->variationConfiguration,
       $this->instanceConfiguration,
     ));
-    $this->processScope();
     return $this;
   }
 

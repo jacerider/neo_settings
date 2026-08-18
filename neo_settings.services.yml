@@ -2,7 +2,9 @@ services:
   neo_settings.repository:
     abstract: true
     class: Drupal\neo_settings\SettingsRepository
-    arguments: ['@entity_type.manager', '@plugin.manager.neo_settings', '@current_route_match']
+    # Child services append their plugin id, so it must remain the last
+    # constructor argument.
+    arguments: ['@entity_type.manager', '@plugin.manager.neo_settings', '@current_route_match', '@current_user', '@router.admin_context']
   plugin.manager.neo_settings:
     class: Drupal\neo_settings\SettingsManager
     parent: neo_settings_plugin_manager
