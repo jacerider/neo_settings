@@ -138,6 +138,27 @@ edit and delete routes, the local task, and the local action. Related keys:
 UI), `variation_conditions` (visibility conditions per variation),
 `variation_ordering` (draggable weights), `variation_scope`.
 
+### Two ways a variation gets chosen — pick one
+
+**By explicit id** (`variation_conditions = false`, the default). Nothing
+resolves a variation on its own: `getActive()` always returns the core
+settings, and a caller asks for one by name — `$repository->get('shelf_top')`,
+a `neo_settings_variation` form element, a block that stores the id. This is
+what every plugin in the family does. `neo_modal` calls them presets.
+
+**By visibility condition** (`variation_conditions = true`). `getActive()`
+returns the *first* variation whose conditions resolve, ordered by weight,
+falling back to the core settings only when none match — an ordered cascade,
+which is what `variation_ordering` is for.
+
+Do not mix them. Conditions resolve with `resolveConditions($conditions,
+'and')`, and an empty condition set is vacuously true — exactly like a block
+with no visibility conditions showing on every page. So on a plugin whose
+variations are meant to be picked by id, **one variation saved without
+conditions silently becomes the settings for the entire site**. That is why the
+default is `false`: the cascade is a real feature, but nothing should inherit
+it by omission.
+
 A variation may `parent` another; ancestors' settings are overlaid lowest-first
 at read time. The child stores only what it overrides.
 

@@ -28,7 +28,13 @@ class SettingsManager extends DefaultPluginManager implements SettingsManagerInt
     'variation_allow' => FALSE,
     'variation_label' => 'variation',
     'variation_label_plural' => 'variations',
-    'variation_conditions' => TRUE,
+    // Off by default: with conditions on, getActive() returns the first
+    // variation whose visibility resolves, and a variation saved with no
+    // conditions resolves everywhere -- so it silently becomes the default
+    // for the whole site. That cascade is a deliberate feature, but it is
+    // the sharp one, and a plugin whose variations are chosen explicitly by
+    // id should never inherit it by omission.
+    'variation_conditions' => FALSE,
     'variation_ordering' => TRUE,
     'variation_scope' => NULL,
     'handlers' => [],
